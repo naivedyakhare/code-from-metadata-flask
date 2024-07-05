@@ -98,6 +98,19 @@
             height: calc(100% - 140px);
             overflow-y: auto;
         }
+        .loader {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1.5em;
+            z-index: 1000;
+        }
     </style>
 </head>
 
@@ -124,38 +137,43 @@
         </div>
         <div class="column right">
             <div class="output-container" id="outputContainer">
-                <h3>Generated Code:</h3>
+                <h3>Generated Code:</h3><div id="loader" class="loader" style="display: none;">Processing...</div>
                 <button id="copyButton" class="btn">Copy Code</button>
                 <pre class="output" id="output"></pre>
             </div>
         </div>
     </div>
-
+    
     <script>
-        document.getElementById('promptForm').addEventListener('submit', function (event) {
+        document.getElementById('promptForm').addEventListener('submit', function(event) {
             event.preventDefault();
-
+            
             const apiKey = document.getElementById('apiKey').value;
             const prompt = document.getElementById('prompt').value;
-
+            const loader = document.getElementById('loader');
+            
+            // Show the loader
+            loader.style.display = 'block';
+    
             fetch('/generate', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        apiKey,
-                        prompt
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('output').textContent = data.generatedCode;
-                    document.getElementById('outputContainer').style.display = 'block';
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ apiKey, prompt })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('output').textContent = data.generatedCode;
+                document.getElementById('outputContainer').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            })
+            .finally(() => {
+                // Hide the loader
+                loader.style.display = 'none';
+            });
         });
         document.getElementById('copyButton').addEventListener('click', function () {
             const outputElement = document.getElementById('output');
