@@ -12,50 +12,7 @@ def generate():
     # To create chat history
     global messages
     
-    data = request.get_json()
-    api_key = data['apiKey']
-    prompt = data['prompt']
-    # Generating prompt that will be an input
-    prompt = f'''
-{prompt}
-
-You have been given the metadata. Create a code in the SAS based on the given metadata.
-Give raw code without any suffix or prefix or ``` symbols. Raw code that can be straight up executed.
-        '''
-    
-    messages.append({"role": "user", "content": prompt})
-    
-    client = openai.OpenAI(api_key=api_key)
-    
-    try:
-        return jsonify({'generatedCode': output_from_response(call_openai(client, messages))})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-
-# HELPING FUNCTIONS
-
-def output_from_response(response):
-    output = ""
-    stream_chunk = list([*response])
-    for chunk in stream_chunk:
-        if chunk.choices != []:
-            if chunk.choices[0].delta.content is not None:
-                output += chunk.choices[0].delta.content
-
-    return output
-
-
-def call_openai(client, messages):
-    return client.chat.completions.create(
-                model='gpt-4-turbo',  # or use another engine suitable for code generation
-                messages=messages,
-                stream=True,
-                stream_options={"include_usage": True}
-    )
-
-def init_variables():
-    global messages
+    messages = []
     role_system = {"role": "system", "content": "You are a SAS programmer assitant. You will create SAS Code for clinical trials metadata specification following SDTM Guidelines."}
     reference_prompt = '''
         I have given you Reference Metadata and Reference Code below. Use it to learn how to generate SAS code.
@@ -173,13 +130,50 @@ def init_variables():
 
         I will give you query or metadata in the next prompt. You will need to create SAS code based on the query or metadata I give you next.
     '''
-
-    messages = []
     messages.append(role_system)
     messages.append({"role": "user", "content": reference_prompt})
+    
+    data = request.get_json()
+    api_key = data['apiKey']
+    prompt = data['prompt']
+    # Generating prompt that will be an input
+    prompt = f'''
+{prompt}
 
-    return
+You have been given the metadata. Create a code in the SAS based on the given metadata.
+Give raw code without any suffix or prefix or ``` symbols. Raw code that can be straight up executed.
+        '''
+    
+    messages.append({"role": "user", "content": prompt})
+    
+    client = openai.OpenAI(api_key=api_key)
+    
+    try:
+        return jsonify({'generatedCode': output_from_response(call_openai(client, messages))})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# HELPING FUNCTIONS
+
+def output_from_response(response):
+    output = ""
+    stream_chunk = list([*response])
+    for chunk in stream_chunk:
+        if chunk.choices != []:
+            if chunk.choices[0].delta.content is not None:
+                output += chunk.choices[0].delta.content
+
+    return output
+
+
+def call_openai(client, messages):
+    return client.chat.completions.create(
+                model='gpt-4-turbo',  # or use another engine suitable for code generation
+                messages=messages,
+                stream=True,
+                stream_options={"include_usage": True}
+    )
 
 if __name__ == '__main__':
-    init_variables()
     app.run(debug=True)
