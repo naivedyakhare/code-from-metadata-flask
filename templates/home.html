@@ -111,14 +111,26 @@
             font-size: 1.5em;
             z-index: 1000;
         }
+        .warning {
+            background-color: rgb(4, 224, 184);
+            padding:10px;
+            position: absolute;
+            top: -1%;
+            display: block;
+            width: 80%;
+            text-align: center;
+            border-radius: 10px;
+        }
+        
+        
     </style>
 </head>
 
 <body>
 
+    <p class="warning">This is a project to show case the possibilities. Since this uses LLMs, the generated code is error prone.</p>
     <div class="container">
         <div class="column left">
-            <p>This is a project to show case the possibilities. Since this uses LLMs, the generated code might be Error prone, specially non-DM datasets.</p>
             <div class="form-group">
                 <label for="fileUpload">Upload File</label>
                 <input type="file" id="fileUpload" name="fileUpload" accept=".txt, .csv, .json">
